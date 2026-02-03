@@ -11,6 +11,7 @@ cached_tags.file
 *.test
 
 *.out
+main
 
 vendor/
 temp/
