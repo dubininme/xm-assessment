@@ -69,8 +69,6 @@ make kafka-consume
 
 Full API specification: [api/openapi.yaml](api/openapi.yaml)
 
-Request examples: [requests.md](requests.md)
-
 ## Authentication
 
 The service uses a two-step authentication approach:
