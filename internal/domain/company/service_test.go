@@ -119,6 +119,22 @@ func TestUpdateCompany_Success(t *testing.T) {
 	mockPublisher.AssertExpectations(t)
 }
 
+func TestUpdateCompany_EmptyParams(t *testing.T) {
+	service, mockRepo, mockPublisher, _ := setupServiceMocks(t)
+
+	companyID := uuid.New().String()
+	params := UpdateParams{} // All fields are nil
+
+	result, err := service.UpdateCompany(context.Background(), companyID, params)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, ErrNoFieldsToUpdate)
+	mockRepo.AssertNotCalled(t, "GetByID")
+	mockRepo.AssertNotCalled(t, "Update")
+	mockPublisher.AssertNotCalled(t, "Publish")
+}
+
 func TestUpdateCompany_NotFound(t *testing.T) {
 	service, mockRepo, mockPublisher, _ := setupServiceMocks(t)
 

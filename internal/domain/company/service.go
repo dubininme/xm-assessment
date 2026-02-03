@@ -59,6 +59,11 @@ func (s *CompanyService) CreateCompany(ctx context.Context, params CreateParams)
 }
 
 func (s *CompanyService) UpdateCompany(ctx context.Context, companyID string, params UpdateParams) (*Company, error) {
+	// Check if any fields are provided for update
+	if params.IsEmpty() {
+		return nil, ErrNoFieldsToUpdate
+	}
+
 	c, err := s.repo.GetByID(ctx, companyID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get company by ID: %w", err)

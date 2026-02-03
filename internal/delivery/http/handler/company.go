@@ -106,7 +106,8 @@ func (h *CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, company.ErrInvalidCompanyNameLength) ||
 			errors.Is(err, company.ErrInvalidCompanyDescriptionLength) ||
 			errors.Is(err, company.ErrInvalidEmployeesCount) ||
-			errors.Is(err, company.ErrInvalidCompanyType) {
+			errors.Is(err, company.ErrInvalidCompanyType) ||
+			errors.Is(err, company.ErrNoFieldsToUpdate) {
 			writeErr(w, http.StatusBadRequest, oapi.ErrorCodeBadRequest, err.Error())
 			return
 		}

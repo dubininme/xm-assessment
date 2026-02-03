@@ -8,3 +8,4 @@ var ErrInvalidCompanyDescriptionLength = errors.New("invalid company description
 var ErrInvalidEmployeesCount = errors.New("invalid employees count")
 var ErrInvalidCompanyType = errors.New("invalid company type")
 var ErrCompanyNotFound = errors.New("company not found")
+var ErrNoFieldsToUpdate = errors.New("at least one field must be provided for update")
