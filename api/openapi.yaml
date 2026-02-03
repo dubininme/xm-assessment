@@ -1,0 +1,249 @@
+openapi: 3.0.3
+info:
+  title: xm-assessment
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check endpoint
+      description: Returns 200 OK if service is healthy (used by load balancers and k8s probes)
+      responses:
+        '200':
+          description: Service is healthy
+
+  /api/v1/auth/token:
+    post:
+      operationId: generateToken
+      summary: Generate JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: string
+                  example: "test-user-123"
+      responses:
+        '200':
+          description: Token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - token
+                properties:
+                  token:
+                    type: string
+                    description: JWT token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/companies:
+    post:
+      operationId: createCompany
+      summary: Create new company
+      description: Creates a new company. Returns 409 if company name already exists.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompanyRequest'
+      responses:
+        '201':
+          description: Company created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/companies/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getCompany
+      summary: Get company by ID
+      description: Retrieves a company by its UUID
+      responses:
+        '200':
+          description: Company found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateCompany
+      summary: Update company
+      description: Partially updates a company. Returns 404 if company does not exist. Returns 409 if new name already exists.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCompanyRequest'
+      responses:
+        '200':
+          description: Company updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      operationId: deleteCompany
+      summary: Delete company
+      description: Deletes a company by ID. Returns 404 if company does not exist.
+      responses:
+        '204':
+          description: Company deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    Company:
+      type: object
+      required: 
+        - id
+        - name
+        - employees_count
+        - registered
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 15
+        description:
+          type: string
+          maxLength: 3000
+        employees_count:
+          type: integer
+        registered:
+          type: boolean
+        type:
+          $ref: '#/components/schemas/CompanyType'
+
+    CompanyType:
+      type: string
+      enum:
+        - Corporations
+        - NonProfit
+        - Cooperative
+        - Sole Proprietorship
+
+    CreateCompanyRequest:
+      type: object
+      required: 
+      - name 
+      - employees_count
+      - registered
+      - type
+      properties:
+        name:
+          type: string
+          maxLength: 15
+        description:
+          type: string
+          maxLength: 3000
+        employees_count:
+          type: integer
+        registered:
+          type: boolean
+        type:
+          $ref: '#/components/schemas/CompanyType'
+
+    UpdateCompanyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 15
+        description:
+          type: string
+          maxLength: 3000
+        employees_count:
+          type: integer
+        registered:
+          type: boolean
+        type:
+          $ref: '#/components/schemas/CompanyType'
+
+    Error:
+      type: object
+      required: 
+        - code
+        - message
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+
+    ErrorCode:
+      type: string
+      enum:
+        - bad_request
+        - unauthorized
+        - not_found
+        - internal_error
+        - conflict
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
