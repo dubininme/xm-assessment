@@ -1,0 +1,23 @@
+# Binaries for programs and plugins
+cached_tags.file
+.env
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+
+*.test
+
+*.out
+
+vendor/
+temp/
+.idea
+samples
+
+# macOS system files
+.DS_Store
+**/.DS_Store
+._*

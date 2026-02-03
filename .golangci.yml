@@ -1,0 +1,46 @@
+version: 2
+
+run:
+  timeout: 3m
+  skip-dirs:
+    - pkg/gen
+  skip-files:
+    - ".*_gen.go"
+    - ".*\\.pb\\.go"
+    - ".*\\.mock\\.go"
+
+linters:
+  enable:
+    # Default linters
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+
+    # Security
+    - gosec         # Security issues
+    - bodyclose     # HTTP response body must be closed
+    - sqlclosecheck # SQL rows/statements must be closed
+    - noctx         # HTTP requests without context
+
+    # Error handling
+    - errchkjson    # JSON marshaling errors
+
+    # Code style
+    - misspell
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/dubininme/xm-assessment
+
+issues:
+  exclude-rules:
+    - path: pkg/gen/
+      linters:
+        - all
