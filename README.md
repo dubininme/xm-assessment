@@ -14,7 +14,7 @@ A microservice for managing company data with event-driven architecture using Cl
 
 - **Clean Architecture** - domain-centric design with clear layer separation
 - **Outbox Pattern** - reliable event publishing with at-least-once delivery guarantee
-- **JWT Authentication** - token-based API security
+- **JWT Authentication** - token-based API security with password validation
 
 ## Quick Start
 
@@ -30,10 +30,10 @@ curl http://localhost:8080/health
 
 3. Test the API:
 ```bash
-# Generate token
+# Generate token (authenticate with demo password)
 export TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/token \
   -H "Content-Type: application/json" \
-  -d '{"user_id":"test"}' | jq -r '.token')
+  -d '{"user_id":"test","password":"demo-password-123"}' | jq -r '.token')
 
 # Create company
 curl -X POST http://localhost:8080/api/v1/companies \
@@ -61,15 +61,27 @@ make kafka-consume
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/health` | No | Health check |
-| POST | `/api/v1/auth/token` | No | Generate JWT token |
+| POST | `/api/v1/auth/token` | Password | Generate JWT token (password: `demo-password-123`) |
 | GET | `/api/v1/companies/{id}` | No | Get company |
-| POST | `/api/v1/companies` | Yes | Create company |
-| PATCH | `/api/v1/companies/{id}` | Yes | Update company |
-| DELETE | `/api/v1/companies/{id}` | Yes | Delete company |
+| POST | `/api/v1/companies` | JWT | Create company |
+| PATCH | `/api/v1/companies/{id}` | JWT | Update company |
+| DELETE | `/api/v1/companies/{id}` | JWT | Delete company |
 
 Full API specification: [api/openapi.yaml](api/openapi.yaml)
 
 Request examples: [requests.md](requests.md)
+
+## Authentication
+
+The service uses a two-step authentication approach:
+
+1. **Token Generation** (`/api/v1/auth/token`): Requires a password (`demo-password-123` for demo purposes)
+   - In production, this would validate against a user database with hashed passwords
+   - Returns a JWT token valid for 1 hour
+
+2. **API Authorization**: Protected endpoints require the JWT token in the `Authorization` header
+   - Format: `Authorization: Bearer <token>`
+   - Token is validated on each request using HMAC signature
 
 ## Running Tests
 

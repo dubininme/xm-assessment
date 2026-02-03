@@ -120,7 +120,10 @@ func TestCompanyLifecycle_Integration(t *testing.T) {
 
 func getAuthToken(t *testing.T, router http.Handler) string {
 	t.Helper()
-	req := map[string]string{"user_id": "test-user"}
+	req := map[string]string{
+		"user_id":  "test-user",
+		"password": "demo-password-123",
+	}
 	body, _ := json.Marshal(req)
 	resp := makeRequest(t, router, "POST", "/api/v1/auth/token", "", body)
 	require.Equal(t, http.StatusOK, resp.Code)

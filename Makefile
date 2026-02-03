@@ -49,7 +49,7 @@ kafka-consume:
 	docker exec companies-kafka rpk topic consume company-events --num 10 --format json | jq
 
 db-companies:
-	docker exec companies-db psql -U xm_user -d xm_db -c "SELECT id, name, employees_count, registered, type FROM companies ORDER BY created_at DESC LIMIT 10;"
+	docker exec companies-db psql -U xm_user -d xm_db -c "SELECT id, name, employees_count, registered, type FROM companies LIMIT 10;"
 
 db-outbox:
 	docker exec companies-db psql -U xm_user -d xm_db -c "SELECT id, event_type, aggregate_id, is_processed, created_at, processed_at FROM outbox ORDER BY id DESC LIMIT 10;"
