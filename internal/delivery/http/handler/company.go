@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/dubininme/xm-assessment/internal/domain/company"
-
 	"github.com/dubininme/xm-assessment/pkg/gen/oapi"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -22,6 +22,11 @@ func NewCompanyHandler(service *company.CompanyService) *CompanyHandler {
 func (h *CompanyHandler) GetCompany(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
+
+	if _, err := uuid.Parse(id); err != nil {
+		writeErr(w, http.StatusBadRequest, oapi.ErrorCodeBadRequest, "invalid company id")
+		return
+	}
 
 	c, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
@@ -73,6 +78,11 @@ func (h *CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
+	if _, err := uuid.Parse(id); err != nil {
+		writeErr(w, http.StatusBadRequest, oapi.ErrorCodeBadRequest, "invalid company id")
+		return
+	}
+
 	var req oapi.UpdateCompanyRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -112,6 +122,11 @@ func (h *CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
 func (h *CompanyHandler) DeleteCompany(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
+
+	if _, err := uuid.Parse(id); err != nil {
+		writeErr(w, http.StatusBadRequest, oapi.ErrorCodeBadRequest, "invalid company id")
+		return
+	}
 
 	err := h.service.DeleteCompany(r.Context(), id)
 	if err != nil {
