@@ -1,4 +1,4 @@
-// +build unit
+//go:build unit
 
 package handler
 
@@ -50,7 +50,7 @@ func TestUpdateRequestToParams_AllFields(t *testing.T) {
 	desc := "Updated Desc"
 	count := 200
 	registered := true
-	companyType := oapi.CompanyType("SoleProprietorship")
+	companyType := oapi.SoleProprietorship
 
 	req := oapi.UpdateCompanyRequest{
 		Name:           &name,
@@ -67,7 +67,7 @@ func TestUpdateRequestToParams_AllFields(t *testing.T) {
 	assert.Equal(t, &count, params.EmployeesCount)
 	assert.Equal(t, &registered, params.Registered)
 	require.NotNil(t, params.Type)
-	assert.Equal(t, "SoleProprietorship", *params.Type)
+	assert.Equal(t, "Sole Proprietorship", *params.Type)
 }
 
 func TestUpdateRequestToParams_PartialFields(t *testing.T) {
