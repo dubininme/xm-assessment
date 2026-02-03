@@ -37,8 +37,9 @@ func (k *KafkaConfig) BrokersList() []string {
 }
 
 type OutboxConfig struct {
-	BatchSize int           `envconfig:"OUTBOX_BATCH_SIZE" default:"100"`
-	Interval  time.Duration `envconfig:"OUTBOX_INTERVAL" default:"5s"`
+	BatchSize      int           `envconfig:"OUTBOX_BATCH_SIZE" default:"100"`
+	Interval       time.Duration `envconfig:"OUTBOX_INTERVAL" default:"5s"`
+	PublishTimeout time.Duration `envconfig:"OUTBOX_PUBLISH_TIMEOUT" default:"500ms"`
 }
 
 func InitConfig() (*AppConfig, error) {

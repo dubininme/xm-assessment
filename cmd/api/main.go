@@ -59,6 +59,7 @@ func main() {
 		txManager,
 		cfg.Outbox.BatchSize,
 		cfg.Outbox.Interval,
+		cfg.Outbox.PublishTimeout,
 	)
 
 	processorErrCh := make(chan error, 1)
