@@ -59,12 +59,9 @@ func (p *Processor) Start(ctx context.Context) error {
 
 func (p *Processor) processBatch(ctx context.Context) error {
 	log := logger.FromContext(ctx)
-	var events []postgres.OutboxEvent
-	var messages []kafkago.Message
 
-	err := p.txManager.Do(ctx, func(txCtx context.Context) error {
-		var err error
-		events, err = p.outboxRepo.GetUnprocessed(txCtx, p.batchSize)
+	return p.txManager.Do(ctx, func(txCtx context.Context) error {
+		events, err := p.outboxRepo.GetUnprocessed(txCtx, p.batchSize)
 		if err != nil {
 			return fmt.Errorf("failed to get unprocessed events: %w", err)
 		}
@@ -73,6 +70,24 @@ func (p *Processor) processBatch(ctx context.Context) error {
 			return nil
 		}
 
+		messages := make([]kafkago.Message, 0, len(events))
+		for _, e := range events {
+			messages = append(messages, kafkago.Message{
+				Key:   []byte(e.AggregateID),
+				Value: []byte(e.Payload),
+				Headers: []kafkago.Header{
+					{Key: "event_name", Value: []byte(e.EventType)},
+				},
+			})
+		}
+
+		// Publish to Kafka first - if this fails, transaction rolls back
+		// and events remain unprocessed for retry
+		if err := p.producer.PublishBatch(txCtx, messages); err != nil {
+			return fmt.Errorf("failed to write messages to kafka: %w", err)
+		}
+
+		// Mark as processed only after successful Kafka publish
 		ids := make([]int64, len(events))
 		for i, e := range events {
 			ids[i] = e.ID
@@ -82,35 +97,7 @@ func (p *Processor) processBatch(ctx context.Context) error {
 			return fmt.Errorf("failed to mark events as processed: %w", err)
 		}
 
+		log.Info("processed events from outbox", "count", len(events))
 		return nil
 	})
-
-	if err != nil {
-		return err
-	}
-
-	if len(events) == 0 {
-		return nil
-	}
-
-	messages = make([]kafkago.Message, 0, len(events))
-	for _, e := range events {
-		messages = append(messages, kafkago.Message{
-			Key:   []byte(e.AggregateID),
-			Value: []byte(e.Payload),
-			Headers: []kafkago.Header{
-				{Key: "event_name", Value: []byte(e.EventType)},
-			},
-		})
-	}
-
-	if err := p.producer.PublishBatch(ctx, messages); err != nil {
-		log.Warn("failed to send events to Kafka (events marked as processed)",
-			"count", len(events),
-			"error", err)
-		return fmt.Errorf("failed to write messages to kafka: %w", err)
-	}
-
-	log.Info("processed events from outbox", "count", len(events))
-	return nil
 }

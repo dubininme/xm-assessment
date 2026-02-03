@@ -43,12 +43,14 @@ func (r *OutboxRepo) MarkProcessed(ctx context.Context, ids []int64) error {
 		return nil
 	}
 
+	exec := ExtractExecutor(ctx, r.db)
 	query := `UPDATE outbox SET is_processed = true, processed_at = $1 WHERE id = ANY($2)`
-	_, err := r.db.ExecContext(ctx, query, time.Now().Unix(), pq.Array(ids))
+	_, err := exec.ExecContext(ctx, query, time.Now().Unix(), pq.Array(ids))
 	return err
 }
 
 func (r *OutboxRepo) GetUnprocessed(ctx context.Context, limit int) ([]OutboxEvent, error) {
+	exec := ExtractExecutor(ctx, r.db)
 	query := `SELECT id, event_type, aggregate_id, payload, created_at
 	          FROM outbox
 	          WHERE is_processed = false
@@ -56,7 +58,7 @@ func (r *OutboxRepo) GetUnprocessed(ctx context.Context, limit int) ([]OutboxEve
 	          LIMIT $1
 	          FOR UPDATE SKIP LOCKED`
 
-	rows, err := r.db.QueryContext(ctx, query, limit)
+	rows, err := exec.QueryContext(ctx, query, limit)
 	if err != nil {
 		return nil, err
 	}
