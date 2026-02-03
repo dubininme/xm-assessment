@@ -37,13 +37,13 @@ lint-fix:
 	golangci-lint run --fix ./...
 
 test:
-	go test -tags=integration ./... -race -v
+	go test -tags=unit,integration ./... -race -v
 
 test-unit:
-	go test ./... -race -v -short
+	go test -tags=unit ./... -race -v
 
 test-integration:
-	go test -tags=integration ./... -race -v -run Integration
+	go test -tags=integration ./... -race -v
 
 kafka-consume:
 	docker exec companies-kafka rpk topic consume company-events --num 10 --format json | jq
