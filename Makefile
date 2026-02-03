@@ -1,4 +1,4 @@
-.PHONY: up down migrate-up migrate-down migrate-version generate lint lint-fix test logs kafka-consume db-companies db-outbox
+.PHONY: up down migrate-up migrate-down migrate-version generate lint lint-fix test test-unit test-integration logs kafka-consume db-companies db-outbox
 
 OPENAPI_FILE = api/openapi.yaml
 GEN_DIR = pkg/gen/oapi
@@ -37,16 +37,19 @@ lint-fix:
 	golangci-lint run --fix ./...
 
 test:
-	go test ./... -race -v
+	go test -tags=integration ./... -race -v
 
-# Kafka: consume events from topic
+test-unit:
+	go test ./... -race -v -short
+
+test-integration:
+	go test -tags=integration ./... -race -v -run Integration
+
 kafka-consume:
 	docker exec companies-kafka rpk topic consume company-events --num 10 --format json | jq
 
-# Database: show companies
 db-companies:
 	docker exec companies-db psql -U xm_user -d xm_db -c "SELECT id, name, employees_count, registered, type FROM companies ORDER BY created_at DESC LIMIT 10;"
 
-# Database: show outbox events
 db-outbox:
 	docker exec companies-db psql -U xm_user -d xm_db -c "SELECT id, event_type, aggregate_id, is_processed, created_at, processed_at FROM outbox ORDER BY id DESC LIMIT 10;"
