@@ -60,7 +60,7 @@ func (r *OutboxRepo) GetUnprocessed(ctx context.Context, limit int) ([]OutboxEve
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var events []OutboxEvent
 	for rows.Next() {

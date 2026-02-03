@@ -7,11 +7,10 @@ import (
 
 	"github.com/dubininme/xm-assessment/internal/domain/events"
 	"github.com/segmentio/kafka-go"
-	kafkago "github.com/segmentio/kafka-go"
 )
 
 type Producer struct {
-	writer *kafkago.Writer
+	writer *kafka.Writer
 	topic  string
 }
 
