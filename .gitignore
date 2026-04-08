@@ -15,10 +15,15 @@ main
 
 vendor/
 temp/
+docs/plans/*
 .idea
+.agents/
+.claude/*
+
 samples
 
 # macOS system files
 .DS_Store
 **/.DS_Store
 ._*
+
